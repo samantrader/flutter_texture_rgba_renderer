@@ -16,24 +16,6 @@ TextureRgba::~TextureRgba()
 	texture_registrar_->UnregisterTexture(texture_id_);
 }
 
-void TextureRgba::switch_rgba(std::vector<uint8_t> &buffer, size_t height)
-{
-	uint8_t temp;
-	size_t byes_per_row = buffer.size() / height;
-	size_t width = byes_per_row >> 2;
-	for (size_t i = 0; i < height; ++i)
-	{
-		size_t row_idx_base = i * byes_per_row;
-		for (size_t k = 0; k < width; ++k)
-		{
-			size_t idx = row_idx_base + k * 4;
-			temp = buffer[idx];
-			buffer[idx] = buffer[idx + 2];
-			buffer[idx + 2] = temp;
-		}
-	}
-}
-
 void TextureRgba::MarkVideoFrameAvailable(
 	std::vector<uint8_t> &buffer, size_t width, size_t height)
 {
@@ -45,7 +27,6 @@ void TextureRgba::MarkVideoFrameAvailable(
 	// Do not check bellow. Because the data may have paddings per row.
 	// buffer.size() != width * height * 4
 
-	switch_rgba(buffer, height);
 	const std::lock_guard<std::mutex> lock(mutex_);
 	int bg_index = fg_index_ ^ 1;
 	buffer.swap(buffer_tmp_[bg_index]);
