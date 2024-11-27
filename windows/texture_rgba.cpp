@@ -39,6 +39,23 @@ void TextureRgba::MarkVideoFrameAvailable(
 	}
 }
 
+void TextureRgba::MarkVideoFrameAvailable2(const uint8_t* buffer, const size_t buffer_length, size_t width, size_t height) {
+	if (!buffer  || buffer_length < width * height * 4)
+	{
+		return;
+	}
+	const std::lock_guard<std::mutex> lock(mutex_);
+	int bg_index = fg_index_ ^ 1;
+	buffer_tmp_[bg_index].assign(buffer, buffer + buffer_length);
+	width_[bg_index] = width;
+	height_[bg_index] = height;
+	if (!buff_ready_)
+	{
+		buff_ready_ = true;
+		texture_registrar_->MarkTextureFrameAvailable(texture_id_);
+	}
+}
+
 // This function may be called
 // event texture_registrar_->MarkTextureFrameAvailable(texture_id_); is not called before.
 inline const FlutterDesktopPixelBuffer *TextureRgba::buffer()
